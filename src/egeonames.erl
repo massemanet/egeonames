@@ -8,7 +8,7 @@
 -author('mats cronqvist').
 
 %% the API
--export([start/0,stop/0,unlink/0]).
+-export([start/0,stop/0,state/0,unlink/0]).
 
 %% for application supervisor
 -export([start_link/0]).
@@ -18,6 +18,16 @@
 -export([init/1,terminate/2,code_change/3,
          handle_call/3,handle_cast/2,handle_info/2]).
 
+%% declare the state
+-record(state,{dirname = dirname(),
+               filename = filename(),
+               tablename = tablename()}).
+
+%% add all records here, to kludge around the record kludge.
+rec_info(state) -> record_info(fields,state);
+rec_info(_)     -> [].
+
+%% the API
 start() ->
   application:start(?MODULE).
 
@@ -27,13 +37,16 @@ stop() ->
 unlink() ->
   gen_server:call(?MODULE,unlink).
 
+state() ->
+  gen_server:call(?MODULE,state).
+
+%% for application supervisor
 start_link() ->
   gen_server:start_link({local,?MODULE},?MODULE,[],[]).
 
--record(state,{}).
-
+%% gen_server callbacks
 init(_) ->
-  {ok,#state{}}.
+  {ok,do_init(#state{})}.
 
 terminate(_Reason,_State) ->
   ok.
@@ -41,6 +54,8 @@ terminate(_Reason,_State) ->
 code_change(_OldVsn,State,_Extra) ->
   {ok,State}.
 
+handle_call(state,_From,State) ->
+  {reply,expand_recs(State),State};
 handle_call(unlink,_From,State) ->
   {links,Links} = process_info(self(),links),
   lists:foreach(fun unlink/1,Links),
@@ -53,3 +68,47 @@ handle_cast(_What,State) ->
 
 handle_info(_What,State) ->
   {noreply,State}.
+
+%% utility to print state
+expand_recs(List) when is_list(List) ->
+  [expand_recs(I) || I <- List];
+expand_recs(Tup) when is_tuple(Tup) ->
+  case tuple_size(Tup) of
+    L when L < 1 -> Tup;
+    L ->
+      try Fields = rec_info(element(1,Tup)),
+          L = length(Fields)+1,
+          lists:zip(Fields,expand_recs(tl(tuple_to_list(Tup))))
+      catch _:_ ->
+          list_to_tuple(expand_recs(tuple_to_list(Tup)))
+      end
+  end;
+expand_recs(Term) ->
+  Term.
+
+%% end of boilerplate
+dirname() -> filename:join(code:priv_dir(?MODULE),data).
+filename() -> "SE.txt".
+tablename() -> egeonames_se.
+
+do_init(S) ->
+  FN = filename:join(S#state.dirname,S#state.filename),
+  {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
+  filefold(FD,mk_liner(S#state.tablename)),
+  S.
+
+mk_liner(Tab) ->
+  ets:new(Tab,[ordered_set,named_table]),
+  ets:insert(Tab,{count,1}),
+  fun({ok,_Data}) -> ets:update_counter(Tab,count,1);
+     ({error,Reason}) -> error({read_line,Reason});
+     (eof) -> throw(eof)
+  end.
+
+filefold(FD,Fun) ->
+  try
+    Fun(file:read_line(FD)),
+    filefold(FD,Fun)
+  catch
+    throw:eof -> ok
+  end.
