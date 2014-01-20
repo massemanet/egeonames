@@ -1,7 +1,7 @@
 {application, egeonames,
  [
-  {description, ""},
-  {vsn, "1"},
+  {description, "wrapper around geonames.org"},
+  {vsn, "0.0.1"},
   {registered, []},
   {applications, [
                   kernel,
