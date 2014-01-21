@@ -126,14 +126,14 @@ filefold(FD,Fun) ->
 
 handle_line(Tab,Data) ->
   try
-    [BID,RealName,LatinName,BNames,BLat,BLong|_] = re:split(Data,"\t"),
+    [BID,RealName,LatinName,BNames,BLat,BLong,<<"P">>|_] = re:split(Data,"\t"),
     ID = list_to_integer(binary_to_list(BID)),
     Lat = bin_to_float(BLat),
     Long = bin_to_float(BLong),
     ets:insert(Tab,{ID,RealName,Lat,Long}),
     insert_names(Tab,ID,[RealName,LatinName|split_comma(BNames)])
   catch
-    _:R -> erlang:display({handle_line_failed,R,binary_to_list(Data)})
+    _:_ -> ok
   end.
 
 bin_to_float(B) ->
