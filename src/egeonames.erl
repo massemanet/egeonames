@@ -42,8 +42,9 @@ state() ->
 
 lookup(Name) when is_binary(Name) ->
   try
-    IDs = ets:match(egeonames_se,{{Name,'$1'}}),
-    [ets:lookup(egeonames_se,ID) || [ID] <- IDs]
+    Tab = tablename(),
+    IDs = ets:match(Tab,{{Name,'$1'}}),
+    [ets:lookup(Tab,ID) || [ID] <- IDs]
   catch
     _:R -> {error,R}
   end;
