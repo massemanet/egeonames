@@ -8,7 +8,7 @@
 -author('mats cronqvist').
 
 %% the API
--export([start/0,stop/0,state/0,unlink/0]).
+-export([start/0,stop/0,state/0,unlink/0,lookup/1]).
 
 %% for application supervisor
 -export([start_link/0]).
@@ -39,6 +39,16 @@ unlink() ->
 
 state() ->
   gen_server:call(?MODULE,state).
+
+lookup(Name) when is_binary(Name) ->
+  try
+    IDs = ets:match(egeonames_se,{{Name,'$1'}}),
+    [ets:lookup(egeonames_se,ID) || [ID] <- IDs]
+  catch
+    _:R -> {error,R}
+  end;
+lookup(Name) ->
+  lookup(list_to_binary(Name)).
 
 %% for application supervisor
 start_link() ->
@@ -100,7 +110,7 @@ do_init(S) ->
 mk_liner(Tab) ->
   ets:new(Tab,[ordered_set,named_table]),
   ets:insert(Tab,{count,1}),
-  fun({ok,_Data}) -> ets:update_counter(Tab,count,1);
+  fun({ok,Data}) -> ets:update_counter(Tab,count,1),handle_line(Tab,Data);
      ({error,Reason}) -> error({read_line,Reason});
      (eof) -> throw(eof)
   end.
@@ -112,3 +122,30 @@ filefold(FD,Fun) ->
   catch
     throw:eof -> ok
   end.
+
+handle_line(Tab,Data) ->
+  try
+    [BID,RealName,LatinName,BNames,BLat,BLong|_] = re:split(Data,"\t"),
+    ID = list_to_integer(binary_to_list(BID)),
+    Lat = bin_to_float(BLat),
+    Long = bin_to_float(BLong),
+    ets:insert(Tab,{ID,RealName,Lat,Long}),
+    insert_names(Tab,ID,[RealName,LatinName|split_comma(BNames)])
+  catch
+    _:R -> erlang:display({handle_line_failed,R,binary_to_list(Data)})
+  end.
+
+bin_to_float(B) ->
+  case re:run(B,"\\.") of
+    nomatch -> float(list_to_integer(binary_to_list(B)));
+    _ -> list_to_float(binary_to_list(B))
+  end.
+
+split_comma(B) ->
+  case re:split(B,",") of
+    [<<>>] -> [];
+    Ns     -> Ns
+  end.
+
+insert_names(Tab,ID,Names) ->
+  [ets:insert(Tab,{{Name,ID}}) || Name <- Names].
