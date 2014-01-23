@@ -20,8 +20,7 @@
 
 %% declare the state
 -record(state,{dirname = dirname(),
-               filename = filename(),
-               tablename = tablename()}).
+               filenames = filenames(dirname())}).
 
 %% add all records here, to kludge around the record kludge.
 rec_info(state) -> record_info(fields,state);
@@ -99,16 +98,19 @@ expand_recs(Term) ->
 
 %% end of boilerplate
 dirname() -> filename:join(code:priv_dir(?MODULE),data).
-filename() -> "SE.txt".
-tablename() -> egeonames_se.
+filenames(Dir) -> filelib:wildcard(filename:join(Dir,"[A-Z][A-Z].txt")).
+tablename() -> egeonames.
 
 do_init(S) ->
-  FN = filename:join(S#state.dirname,S#state.filename),
-  {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
-  filefold(FD,mk_liner(S#state.tablename)),
+  lists:foreach(fun process_file/1,S#state.filenames),
   S.
 
-mk_liner(Tab) ->
+process_file(FN) ->
+  {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
+  filefold(FD,mk_liner()).
+
+mk_liner() ->
+  Tab = tablename(),
   ets:new(Tab,[ordered_set,named_table]),
   ets:insert(Tab,{count,1}),
   fun({ok,Data}) -> ets:update_counter(Tab,count,1),handle_line(Tab,Data);
