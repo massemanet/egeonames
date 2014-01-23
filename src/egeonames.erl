@@ -107,20 +107,20 @@ filenames(Dir) -> filelib:wildcard(filename:join(Dir,"[A-Z][A-Z].txt")).
 tablename() -> egeonames.
 
 do_init(S) ->
-  lists:foreach(fun process_file/1,S#state.filenames),
+  ets:new(tablename(),[ordered_set,named_table]),
+  lists:foreach(process_file(tablename()),S#state.filenames),
   S.
 
-process_file(FN) ->
-  {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
-  filefold(FD,mk_liner()).
+process_file(Tab) ->
+  fun(FN) ->
+      {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
+      filefold(FD,mk_liner(Tab))
+  end.
 
-mk_liner() ->
-  Tab = tablename(),
-  ets:new(Tab,[ordered_set,named_table]),
-  ets:insert(Tab,{count,1}),
-  fun({ok,Data}) -> ets:update_counter(Tab,count,1),handle_line(Tab,Data);
+mk_liner(Tab) ->
+  fun({ok,Data})      -> handle_line(Tab,Data);
      ({error,Reason}) -> error({read_line,Reason});
-     (eof) -> throw(eof)
+     (eof)            -> throw(eof)
   end.
 
 filefold(FD,Fun) ->
