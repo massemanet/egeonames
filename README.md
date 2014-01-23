@@ -14,12 +14,15 @@ erlang wrapper around geonames data set
     rm $CC.zip readme.txt
 
   (re)start egeonames
+
     egeonames:start().
 
   lookup like this;
+
     egeonames:lookup(string(NameOfPopulatedPlace)[,string(CountryCode)])
 
   Examples;
+
     1> egeonames:lookup("Vallberga","SE").
     [[{2665537,<<"Vallberga">>,<<"SE">>,56.46667,13.01667}]]
 
