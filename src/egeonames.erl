@@ -8,7 +8,7 @@
 -author('mats cronqvist').
 
 %% the API
--export([start/0,stop/0,state/0,unlink/0,lookup/1]).
+-export([start/0,stop/0,state/0,unlink/0,lookup/1,lookup/2]).
 
 %% for application supervisor
 -export([start_link/0]).
@@ -39,16 +39,21 @@ unlink() ->
 state() ->
   gen_server:call(?MODULE,state).
 
-lookup(Name) when is_binary(Name) ->
+lookup(Name) ->
+  lookup(Name,'_').
+
+lookup(Name,CC) when is_binary(Name), is_atom(CC) ->
   try
     Tab = tablename(),
-    IDs = ets:match(Tab,{{Name,'$1'}}),
+    IDs = ets:match(Tab,{{Name,CC,'$1'}}),
     [ets:lookup(Tab,ID) || [ID] <- IDs]
   catch
     _:R -> {error,R}
   end;
-lookup(Name) ->
-  lookup(list_to_binary(Name)).
+lookup(Name,CC) when not is_binary(Name) ->
+  lookup(list_to_binary(Name),CC);
+lookup(Name,CC) when not is_atom(CC) ->
+  lookup(Name,list_to_atom(CC)).
 
 %% for application supervisor
 start_link() ->
@@ -128,12 +133,14 @@ filefold(FD,Fun) ->
 
 handle_line(Tab,Data) ->
   try
-    [BID,RealName,LatinName,BNames,BLat,BLong,<<"P">>|_] = re:split(Data,"\t"),
+    SD = re:split(Data,"\t"),
+    [BID,RealName,LatinName,BNames,BLat,BLong,<<"P">>,_,CC|_] = SD,
     ID = list_to_integer(binary_to_list(BID)),
     Lat = bin_to_float(BLat),
     Long = bin_to_float(BLong),
-    ets:insert(Tab,{ID,RealName,Lat,Long}),
-    insert_names(Tab,ID,[RealName,LatinName|split_comma(BNames)])
+    CCA = binary_to_atom(CC,latin1),
+    ets:insert(Tab,{ID,RealName,CC,Lat,Long}),
+    insert_names(Tab,ID,CCA,[RealName,LatinName|split_comma(BNames)])
   catch
     _:_ -> ok
   end.
@@ -141,7 +148,7 @@ handle_line(Tab,Data) ->
 bin_to_float(B) ->
   case re:run(B,"\\.") of
     nomatch -> float(list_to_integer(binary_to_list(B)));
-    _ -> list_to_float(binary_to_list(B))
+    _       -> list_to_float(binary_to_list(B))
   end.
 
 split_comma(B) ->
@@ -150,5 +157,5 @@ split_comma(B) ->
     Ns     -> Ns
   end.
 
-insert_names(Tab,ID,Names) ->
-  [ets:insert(Tab,{{Name,ID}}) || Name <- Names].
+insert_names(Tab,ID,CC,Names) ->
+  [ets:insert(Tab,{{Name,CC,ID}}) || Name <- Names].
