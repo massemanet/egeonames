@@ -1,37 +1,32 @@
 egeonames
 =========
 
-erlang wrapper around geonames data set
+erlang wrapper around geonames data set.
+data is downloaded on demand (from http://download.geonames.org/export/dump)
+and cached.
 
-  download the files you want (XX.txt, where XX is the country code), and
-  put them in egeonames/priv/data.
+  start
 
-    cd egeonames
-    CC=DK
-    wget http://download.geonames.org/export/dump/$CC.zip
-    unzip $CC.zip
-    mv $CC.txt priv/data/
-    rm $CC.zip readme.txt
+    application:ensure_all_started(egeonames).
 
-  (re)start egeonames
+  add a country
 
-    egeonames:start().
+    egeonames:add_country(se).
 
-  lookup like this;
+  check which countries are loaded
 
-    egeonames:lookup(string(NameOfPopulatedPlace)[,string(CountryCode)])
+    1> egeonames:which_countries().
+    [dk,se]
+
+  lookup a place
+
+    egeonames:lookup(atom(CountryCode), string(NameOfPopulatedPlace))
 
   Examples;
 
-    1> egeonames:lookup("Vallberga","SE").
+    1> egeonames:lookup(se, "Vallberga").
     [[{2665537,<<"Vallberga">>,<<"SE">>,56.46667,13.01667}]]
 
-    2> egeonames:lookup("Vallberga").
-    [[{2665537,<<"Vallberga">>,<<"SE">>,56.46667,13.01667}]]
-
-    3> egeonames:lookup("Kobenhavn").
-    [[{2618425,<<"Copenhagen">>,<<"DK">>,55.67594,12.56553}]]
-
-    4> egeonames:lookup("Abild").
-    [[{2625066,<<"Abild">>,<<"DK">>,54.96667,8.86667}],
-     [{2727665,<<"Abild">>,<<"SE">>,56.93333,12.71667}]]
+    2> egeonames:lookup(se, "Valleberga").
+    [[{2665474,<<"Valleberga">>,55.98333,12.95}],
+     [{2665475,<<"Valleberga">>,55.43333,14.05}]]
