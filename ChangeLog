@@ -1,0 +1,174 @@
+commit 0bc4124fe7640f0e233d36b831ccf3d3702fe873
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Fri Apr 14 23:54:36 2017 +0200
+
+    v0.1.0
+
+src/egeonames.app.src
+
+commit 6b31ab5ae77612b4da259654cf9358271490ba35
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Fri Apr 14 23:53:18 2017 +0200
+
+    bettar fail handling
+
+priv/data/DK.txt
+src/egeonames.erl
+
+commit c04337b4ee7fd3b51ec2bf2956c14624254010f8
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Fri Apr 14 22:15:57 2017 +0200
+
+    fetches data over the interwebz
+
+priv/data/SE.txt
+priv/data/readme.txt
+src/egeonames.erl
+
+commit 0d0eab3a9c6de59397975b30e0408a3bdb221635
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Fri Apr 14 18:26:48 2017 +0200
+
+    move to rebar3
+
+.edts
+.gitignore
+Makefile
+bin/release.sh
+rebar
+rebar.config
+rebar3
+src/egeonames.app.src
+src/egeonames.erl
+
+commit 4c00e94c40f11563cba9ac42c8e74ce1af0de478
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Jan 23 16:25:32 2014 +0100
+
+    make README more markdowny
+
+README.md
+
+commit 3af4d76a950212233b2c3bcd56871600f811683a
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Jan 23 16:24:15 2014 +0100
+
+    make README markdowny
+
+README.md
+
+commit 80f29ae81d75866da87902a1e286cee12c5c0f2f
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Jan 23 16:16:27 2014 +0100
+
+    add examples to README
+
+README.md
+
+commit a8ec4c9934472481527d1776ed5f2f71ca6c38c8
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Jan 23 15:46:09 2014 +0100
+
+    adding Denmark as an example
+
+README.md
+priv/data/DK.txt
+src/egeonames.erl
+
+commit 45ad11b4958aa125d4639805a37eaa2bf7fe9f6e
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Jan 23 15:23:39 2014 +0100
+
+    add country code to index
+
+src/egeonames.erl
+
+commit d3809863ee27d3cce70076a111dcd29fbb80dc81
+Author: mats cronqvist <masse@klarna.com>
+Date:   Thu Jan 23 15:01:53 2014 +0100
+
+    handle multiple input files
+
+src/egeonames.erl
+
+commit 8aaa0f4f3170eaa7ae06977771645ba784738905
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Jan 21 02:05:59 2014 +0100
+
+    only show populated places
+
+src/egeonames.erl
+
+commit 18573a4e380e1f033009f6160600c7638e697c66
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Jan 21 01:03:28 2014 +0100
+
+    remove some (alas, not all) hardcoding
+
+src/egeonames.erl
+
+commit e285ce70e213491d27fecaf03c547df63602884c
+Author: mats cronqvist <masse@klarna.com>
+Date:   Tue Jan 21 01:01:22 2014 +0100
+
+    make it work
+
+src/egeonames.erl
+
+commit 3265ba266e99e8396085f39fa1173802d404b169
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Jan 20 21:58:24 2014 +0100
+
+    make this thing actually do something (count the lines in the data file)
+
+src/egeonames.erl
+
+commit 29b85cf1d0c48beb0bc014b7c007054d407eeb74
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Jan 20 18:51:43 2014 +0100
+
+    application boilerplate
+
+src/egeonames.app.src
+src/egeonames.erl
+src/egeonames_sup.erl
+
+commit d6ea72c5a66397cf38c0cb9a9b34cb9a97fd43a4
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Jan 20 11:11:35 2014 +0100
+
+    add rebar skeleton
+
+.gitignore
+Makefile
+rebar
+src/egeonames.app.src
+src/egeonames_app.erl
+src/egeonames_sup.erl
+
+commit 7c5d386bed6e166dbb8a87551ac1a438878b42a4
+Author: mats cronqvist <masse@klarna.com>
+Date:   Mon Jan 20 11:05:16 2014 +0100
+
+    add example file from http://download.geonames.org/export/dump/SE.zip
+
+priv/data/SE.txt
+priv/data/readme.txt
+
+commit 36d58506df378f2be05df1bbb1461726640a7924
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Mon Jan 20 11:02:04 2014 +0100
+
+    Update README.md
+
+README.md
+
+commit 85738533a1814c7f6995c45f602c069fa0291604
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Mon Jan 20 02:01:20 2014 -0800
+
+    Initial commit
+
+.gitignore
+LICENSE
+README.md
