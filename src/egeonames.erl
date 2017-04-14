@@ -8,7 +8,8 @@
 -author('mats cronqvist').
 
 %% the API
--export([start/0, stop/0, state/0, lookup/2, add_country/1]).
+-export([start/0, stop/0, state/0,
+         lookup/2, add_country/1, which_countries/0]).
 
 %% for application supervisor
 -export([start_link/0]).
@@ -32,6 +33,8 @@ state() ->
 
 lookup(Country, Name) when is_list(Name) ->
   lookup(Country, list_to_binary(Name));
+lookup(Country, Name) when is_list(Country) ->
+  lookup(list_to_atom(Country), Name);
 lookup(Country, Name) when is_binary(Name) ->
   try
     IDs = ets:match(?MODULE, {{Name, Country, '$1'}}),
@@ -42,6 +45,13 @@ lookup(Country, Name) when is_binary(Name) ->
 
 add_country(Country) ->
   gen_server:call(?MODULE, {add_country, Country}, infinity).
+
+which_countries() ->
+  try
+    [{countries, Countries}] = ets:lookup(?MODULE, countries),
+    Countries
+  catch _:badarg -> not_started
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% for application supervisor
@@ -74,7 +84,7 @@ handle_info(_What, State) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% end of boilerplate
 do_init() ->
-  FileName = filename:join([code:priv_dir(?MODULE), data, "egeonames.ets"]),
+  FileName = filename:join([code:lib_dir(?MODULE), data, "egeonames.ets"]),
   case ets:file2tab(FileName) of
     {error, _} ->
       ets:new(?MODULE, [ordered_set, named_table]),
@@ -96,15 +106,18 @@ load_country(Filename, Country, Countries) ->
   application:ensure_all_started(inets),
   COUNTRY = string:to_upper(atom_to_list(Country)),
   io:fwrite("fetching - ~p~n", [Country]),
-  Body = http_get(COUNTRY),
-  io:fwrite("inflating - ~p~n", [Country]),
-  TSV = unzip(COUNTRY, Body),
-  io:fwrite("inserting - ~p~n", [Country]),
-  lists:foreach(fun(L) -> liner(Country, L) end, re:split(TSV, "\n")),
-  ets:insert(?MODULE, {countries, [Country|Countries]}),
-  io:fwrite("saving - ~p~n", [Country]),
-  filelib:ensure_dir(Filename),
-  ets:tab2file(?MODULE, Filename).
+  try
+    Body = http_get(COUNTRY),
+    io:fwrite("inflating - ~p~n", [Country]),
+    TSV = unzip(COUNTRY, Body),
+    io:fwrite("inserting - ~p~n", [Country]),
+    lists:foreach(fun(L) -> liner(Country, L) end, re:split(TSV, "\n")),
+    ets:insert(?MODULE, {countries, [Country|Countries]}),
+    io:fwrite("saving - ~p~n", [Country]),
+    filelib:ensure_dir(Filename),
+    ets:tab2file(?MODULE, Filename)
+  catch _:R -> {error, R}
+  end.
 
 http_get(Country) ->
   URL = "http://download.geonames.org/export/dump/"++Country++".zip",
@@ -143,7 +156,7 @@ bin_to_float(B) ->
   end.
 
 split_comma(B) ->
-  case re:split(B, ", ") of
+  case re:split(B, ",") of
     [<<>>] -> [];
     Ns     -> Ns
   end.
