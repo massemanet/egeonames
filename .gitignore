@@ -1,6 +1,6 @@
-.eunit
-/ebin/
-*.o
-*.beam
-*.plt
+*~
+.\#*
+\#*
+/_build/
+/rebar.lock
 erl_crash.dump

@@ -1,12 +1,11 @@
 {application, egeonames,
- [
-  {description, "wrapper around geonames.org"},
+ [{description, "wrapper around geonames.org"},
   {vsn, "0.0.1"},
-  {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { egeonames_app, []}},
-  {env, []}
+  {applications,
+   [kernel,
+    stdlib]},
+  {mod, {egeonames_app, []}},
+  {maintainers, ["Mats Cronqvist"]},
+  {licenses, ["MIT"]},
+  {links, [{"Github", "https://github.com/massemanet/redbug"}]}
  ]}.

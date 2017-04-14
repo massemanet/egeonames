@@ -8,7 +8,7 @@
 -author('mats cronqvist').
 
 %% the API
--export([start/0,stop/0,state/0,unlink/0,lookup/1,lookup/2]).
+-export([start/0,stop/0,state/0,lookup/1]).
 
 %% for application supervisor
 -export([start_link/0]).
@@ -18,14 +18,6 @@
 -export([init/1,terminate/2,code_change/3,
          handle_call/3,handle_cast/2,handle_info/2]).
 
-%% declare the state
--record(state,{dirname = dirname(),
-               filenames = filenames(dirname())}).
-
-%% add all records here, to kludge around the record kludge.
-rec_info(state) -> record_info(fields,state);
-rec_info(_)     -> [].
-
 %% the API
 start() ->
   application:start(?MODULE).
@@ -33,27 +25,19 @@ start() ->
 stop() ->
   application:stop(?MODULE).
 
-unlink() ->
-  gen_server:call(?MODULE,unlink).
-
 state() ->
   gen_server:call(?MODULE,state).
 
-lookup(Name) ->
-  lookup(Name,'_').
-
-lookup(Name,CC) when is_binary(Name), is_atom(CC) ->
+lookup(Name) when is_binary(Name) ->
   try
     Tab = tablename(),
-    IDs = ets:match(Tab,{{Name,CC,'$1'}}),
+    IDs = ets:match(Tab,{{Name,'$1'}}),
     [ets:lookup(Tab,ID) || [ID] <- IDs]
   catch
     _:R -> {error,R}
   end;
-lookup(Name,CC) when not is_binary(Name) ->
-  lookup(list_to_binary(Name),CC);
-lookup(Name,CC) when not is_atom(CC) ->
-  lookup(Name,list_to_atom(CC)).
+lookup(Name) when is_list(Name) ->
+  lookup(list_to_binary(Name)).
 
 %% for application supervisor
 start_link() ->
@@ -61,7 +45,7 @@ start_link() ->
 
 %% gen_server callbacks
 init(_) ->
-  {ok,do_init(#state{})}.
+  {ok,do_init()}.
 
 terminate(_Reason,_State) ->
   ok.
@@ -70,11 +54,7 @@ code_change(_OldVsn,State,_Extra) ->
   {ok,State}.
 
 handle_call(state,_From,State) ->
-  {reply,expand_recs(State),State};
-handle_call(unlink,_From,State) ->
-  {links,Links} = process_info(self(),links),
-  lists:foreach(fun unlink/1,Links),
-  {reply,ok,State};
+  {reply,State,State};
 handle_call(What,_From,State) ->
   {reply,What,State}.
 
@@ -84,38 +64,19 @@ handle_cast(_What,State) ->
 handle_info(_What,State) ->
   {noreply,State}.
 
-%% utility to print state
-expand_recs(List) when is_list(List) ->
-  [expand_recs(I) || I <- List];
-expand_recs(Tup) when is_tuple(Tup) ->
-  case tuple_size(Tup) of
-    L when L < 1 -> Tup;
-    L ->
-      try Fields = rec_info(element(1,Tup)),
-          L = length(Fields)+1,
-          lists:zip(Fields,expand_recs(tl(tuple_to_list(Tup))))
-      catch _:_ ->
-          list_to_tuple(expand_recs(tuple_to_list(Tup)))
-      end
-  end;
-expand_recs(Term) ->
-  Term.
-
 %% end of boilerplate
 dirname() -> filename:join(code:priv_dir(?MODULE),data).
-filenames(Dir) -> filelib:wildcard(filename:join(Dir,"[A-Z][A-Z].txt")).
-tablename() -> egeonames.
+filename() -> "SE.txt".
+tablename() -> egeonames_se.
 
-do_init(S) ->
-  ets:new(tablename(),[ordered_set,named_table]),
-  lists:foreach(process_file(tablename()),S#state.filenames),
-  S.
-
-process_file(Tab) ->
-  fun(FN) ->
-      {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
-      filefold(FD,mk_liner(Tab))
-  end.
+do_init() ->
+  FN = filename:join([dirname(),filename()]),
+  {ok,FD} = file:open(FN,[read,raw,binary,read_ahead]),
+  filefold(FD,mk_liner(tablename())),
+  file:close(FD),
+  #{dirname => dirname(),
+    filename => filename(),
+    tablename => tablename()}.
 
 mk_liner(Tab) ->
   fun({ok,Data})      -> handle_line(Tab,Data);

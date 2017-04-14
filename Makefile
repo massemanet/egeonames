@@ -1,25 +1,40 @@
-REBAR = ../rebar/rebar
+REBAR = ./rebar3
 
-.PHONY: all clean
+.PHONY: all compile test clean
+.PHONY: test eunit xref dialyze
+.PHONY: release release_minor release_major release_patch
 
-all:
+all: compile
+
+compile:
 	@$(REBAR) compile
 
 clean:
 	@find . -name "*~" -exec rm {} \;
-	@find . -name "*.o" -exec rm {} \;
 	@$(REBAR) clean
 
-.PHONY: cnog
-cnog : bin/cnog
-c_src/%.o : c_src/%.c
-	gcc -c -g -Wall -fPIC  -I/usr/lib/erlang/lib/erl_interface-3.7.13/include -I/usr/lib/erlang/erts-5.10.3/include $< -o $@
-bin/cnog : c_src/cnog.o c_src/cnog_marshal.o c_src/cnog_math.o
-	gcc c_src/cnog.o c_src/cnog_marshal.o c_src/cnog_math.o -lpthread -rdynamic -ldl  -L/usr/lib/erlang/lib/erl_interface-3.7.13/lib -lerl_interface -lei -lm -o $@
+test: compile xref eunit
 
-cnode: cnode.c
-	gcc cnode.c \
-	-o cnode \
-	-I/usr/local/otp/lib/erl_interface-3.2.1/include \
-	-L/usr/local/otp/lib/erl_interface-3.2.1/lib \
-	-lerl_interface -lei -lsocket -lnsl
+eunit: all
+	ERL_FLAGS="-sname eunit" $(REBAR) eunit
+	@$(REBAR) cover
+
+xref: all
+	@$(REBAR) xref
+
+dialyze:
+	@$(REBAR) dialyzer
+
+release_major: test
+	./bin/release.sh major
+
+release_minor: test
+	./bin/release.sh minor
+
+release_patch: test
+	./bin/release.sh patch
+
+release: relase_patch
+
+publish:
+	@$(REBAR) hex publish
