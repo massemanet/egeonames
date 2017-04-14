@@ -1,6 +1,6 @@
 {application, egeonames,
  [{description, "wrapper around geonames.org"},
-  {vsn, "0.1.0"},
+  {vsn, "0.1.1"},
   {applications,
    [kernel,
     stdlib]},

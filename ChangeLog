@@ -1,9 +1,36 @@
-commit 0bc4124fe7640f0e233d36b831ccf3d3702fe873
+commit 9ef23cd65b8aa8eebc0ce207d84c5d83de1e4997
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sat Apr 15 00:59:10 2017 +0200
+
+    v0.1.1
+
+src/egeonames.app.src
+
+commit 9537bb43d8a36c57eb491a68b931ef85634a5417
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sat Apr 15 00:40:48 2017 +0200
+
+    remove extra list
+
+README.md
+src/egeonames.erl
+
+commit 96686ef73704dfb2c8063cc1976a0e8261a3b773
+Author: mats cronqvist <masse@cronqvi.st>
+Date:   Sat Apr 15 00:03:19 2017 +0200
+
+    docs
+
+README.md
+
+commit 19203f8e00843455b1ef66c15b3865b66c6515a4
 Author: mats cronqvist <masse@cronqvi.st>
 Date:   Fri Apr 14 23:54:36 2017 +0200
 
     v0.1.0
 
+AUTHORS
+ChangeLog
 src/egeonames.app.src
 
 commit 6b31ab5ae77612b4da259654cf9358271490ba35
