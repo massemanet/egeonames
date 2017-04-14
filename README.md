@@ -25,8 +25,8 @@ and cached.
   Examples;
 
     1> egeonames:lookup(se, "Vallberga").
-    [[{2665537,<<"Vallberga">>,<<"SE">>,56.46667,13.01667}]]
+    [{2665537,<<"Vallberga">>,<<"SE">>,56.46667,13.01667}]
 
     2> egeonames:lookup(se, "Valleberga").
-    [[{2665474,<<"Valleberga">>,55.98333,12.95}],
-     [{2665475,<<"Valleberga">>,55.43333,14.05}]]
+    [{2665474,<<"Valleberga">>,55.98333,12.95},
+     {2665475,<<"Valleberga">>,55.43333,14.05}]

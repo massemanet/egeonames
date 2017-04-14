@@ -38,7 +38,7 @@ lookup(Country, Name) when is_list(Country) ->
 lookup(Country, Name) when is_binary(Name) ->
   try
     IDs = ets:match(?MODULE, {{Name, Country, '$1'}}),
-    [ets:lookup(?MODULE, ID) || [ID] <- IDs]
+    [hd(ets:lookup(?MODULE, ID)) || [ID] <- IDs]
   catch
     _:R -> {error, R}
   end.
